@@ -170,7 +170,7 @@ impl AudioFile {
 }
 
 fn request_chunk(session: &Session, file: FileId, index: usize) -> Channel {
-    trace!("requesting chunk {}", index);
+    trace!("requesting chunk {} of song {}", index, file);
 
     let start = (index * CHUNK_SIZE / 4) as u32;
     let end = ((index + 1) * CHUNK_SIZE / 4) as u32;

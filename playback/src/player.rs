@@ -38,6 +38,7 @@ struct PlayerInternal {
 }
 
 enum PlayerCommand {
+    PreLoad(SpotifyId),
     Load(SpotifyId, bool, u32, oneshot::Sender<()>),
     Play,
     Pause,
@@ -397,6 +398,17 @@ impl PlayerInternal {
     fn handle_command(&mut self, cmd: PlayerCommand) {
         debug!("command={:?}", cmd);
         match cmd {
+            PlayerCommand::PreLoad(track_id) => {
+                match self.load_track(track_id, 0 as i64) {
+                    Some((_decoder, _normalisation_factor)) => {
+                        debug!("loading of song {:?} successful", track_id);
+                    }
+                    None => {
+                        debug!("loading of song {:?} not successful I think", track_id);
+                    }
+                }
+            }
+
             PlayerCommand::Load(track_id, play, position, end_of_track) => {
                 if self.state.is_playing() {
                     self.stop_sink_if_running();
@@ -599,6 +611,9 @@ impl Drop for PlayerInternal {
 impl ::std::fmt::Debug for PlayerCommand {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         match *self {
+            PlayerCommand::PreLoad(track) => f.debug_tuple("PreLoad")
+                .field(&track)
+                .finish(),
             PlayerCommand::Load(track, play, position, _) => f.debug_tuple("Load")
                 .field(&track)
                 .field(&play)
